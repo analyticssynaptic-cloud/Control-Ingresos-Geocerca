@@ -145,6 +145,7 @@ button { font-family: inherit; touch-action: manipulation; }
 .cam-bar { display: flex; align-items: center; justify-content: space-around; padding: 20px 20px max(24px, env(safe-area-inset-bottom)); background: #000; }
 .cam-round { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,.15); color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .shutter { width: 74px; height: 74px; border-radius: 50%; background: #fff; border: 5px solid rgba(255,255,255,.4); cursor: pointer; } .shutter:active { transform: scale(.92); }
+.cam-err { position: absolute; inset: 0; z-index: 2; background: linear-gradient(160deg,#001f45,#003b80); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; gap: 14px; } .cam-err p { font-size: .92rem; line-height: 1.55; opacity: .9; max-width: 320px; } .cam-err .btn-cover { max-width: 320px; }
 .cam-top { position: absolute; top: 0; left: 0; right: 0; padding: max(16px, env(safe-area-inset-top)) 16px 30px; background: linear-gradient(rgba(0,0,0,.6), transparent); color: #fff; font-family: 'Outfit'; font-weight: 700; text-align: center; font-size: .95rem; pointer-events: none; }
 .loading-ov { position: fixed; inset: 0; z-index: 4000; background: rgba(0,30,80,.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px; color: #fff; font-weight: 600; font-size: .95rem; text-align: center; padding: 20px; } .loading-ov.show { display: flex; } .loading-ov .spinner { width: 46px; height: 46px; border-color: rgba(255,255,255,.3); border-top-color: #fff; }
 .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 14px; font-size: .88rem; font-weight: 600; opacity: 0; pointer-events: none; transition: all .3s; z-index: 5000; max-width: 90vw; text-align: center; } .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -361,6 +362,7 @@ button { font-family: inherit; touch-action: manipulation; }
 <!-- CÁMARA -->
 <div class="cam" id="cam">
   <div class="cam-top">Fotografía de comprobación</div>
+  <div class="cam-err hidden" id="camErr"><div class="cv-mark" style="width:64px;height:64px"><svg class="ic ic-lg"><use href="#i-camera"/></svg></div><p id="camErrTxt">No se pudo abrir la cámara dentro del navegador.</p><button class="btn-cover" onclick="usarCamaraNativa()"><svg class="ic"><use href="#i-camera"/></svg><span>ABRIR CÁMARA DEL TELÉFONO</span></button><button class="g-link" onclick="cerrarCamara()">Cancelar</button></div>
   <video id="camVideo" autoplay playsinline muted class="mirror"></video>
   <div class="cam-bar">
     <button class="cam-round" onclick="cerrarCamara()" aria-label="Cancelar"><svg class="ic"><use href="#i-x"/></svg></button>
@@ -368,7 +370,7 @@ button { font-family: inherit; touch-action: manipulation; }
     <button class="cam-round" onclick="voltearCamara()" aria-label="Cambiar cámara"><svg class="ic"><use href="#i-flip"/></svg></button>
   </div>
 </div>
-<input type="file" id="fileFallback" accept="image/*" capture="user" class="hidden" onchange="fotoDesdeArchivo(this)">
+<input type="file" id="fileFallback" accept="image/*" capture="user" style="position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0" onchange="fotoDesdeArchivo(this)">
 
 <div class="overlay" id="ovRes">
   <div class="modal" id="modalRes">
@@ -382,7 +384,7 @@ button { font-family: inherit; touch-action: manipulation; }
 <script>
 /* ═════════ CONFIG ═════════ */
 // Solo se usa cuando esta página está en GitHub Pages. Dentro de Apps Script se comunica sola (google.script.run).
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxm8ftAWYK2elkwMEZOD0_rgHwPHgozQTugabY1rIysNYI_PDHLq447a9j5ZusHguRh/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxZux3eL3jvOukHtH1n7capvQZrKRn8_WLMwR13wKpW4i6aN69jQ5W-1NwMKH2g75cc6A/exec';
 let CFG = { radio: 20, precisionMax: 50 };
 
 /* ═════════ ESTADO ═════════ */
@@ -606,12 +608,18 @@ setInterval(tick, 1000); tick();
 
 /* ═════════ CÁMARA / FOTO ═════════ */
 let stream = null, facing = 'user';
-async function abrirCamara() { if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return $('fileFallback').click(); $('cam').classList.add('show'); await iniciarStream(); }
-async function iniciarStream() {
-  detenerStream();
-  try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false }); const v = $('camVideo'); v.srcObject = stream; v.classList.toggle('mirror', facing === 'user'); await v.play(); }
-  catch (e) { cerrarCamara(); $('fileFallback').click(); }
+function camError(msg) { $('camErrTxt').textContent = msg; $('camErr').classList.remove('hidden'); }
+async function abrirCamara() {
+  $('cam').classList.add('show'); $('camErr').classList.add('hidden');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return camError('Este navegador no permite abrir la cámara dentro de la página. Usa la cámara del teléfono.');
+  await iniciarStream();
 }
+async function iniciarStream() {
+  detenerStream(); $('camErr').classList.add('hidden');
+  try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false }); const v = $('camVideo'); v.srcObject = stream; v.classList.toggle('mirror', facing === 'user'); await v.play(); }
+  catch (e) { detenerStream(); camError(e && e.name === 'NotAllowedError' ? 'El permiso de cámara está bloqueado para esta página. Actívalo en los ajustes del navegador o usa la cámara del teléfono.' : 'No se pudo abrir la cámara dentro del navegador. Usa la cámara del teléfono.'); }
+}
+function usarCamaraNativa() { cerrarCamara(); $('fileFallback').click(); }
 function detenerStream() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
 function cerrarCamara() { detenerStream(); $('cam').classList.remove('show'); }
 function voltearCamara() { facing = facing === 'user' ? 'environment' : 'user'; iniciarStream(); }
