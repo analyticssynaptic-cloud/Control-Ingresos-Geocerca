@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#003366" />
+<title>Control de Ingresos - OIKOS</title>
+<link rel="icon" type="image/png" href="https://oikos.com.co/wp-content/uploads/2021/01/cropped-Favicon-Oikos-32x32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --primary-blue: #004a99; --deep-blue: #003366; --accent-cyan: #00d2ff; --text-gray: #64748b;
+  --ok: #059669; --ok-soft: #d1fae5; --bad: #dc2626; --bad-soft: #fee2e2; --warn: #b45309; --warn-soft: #fef3c7;
+  --line: #e2e8f0; --ink: #1e293b; --bg: #eef2fb;
+  --grad: linear-gradient(135deg, #0a5fc0 0%, #004a99 50%, #003366 100%);
+}
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: 'DM Sans', sans-serif; color: var(--ink); background: linear-gradient(135deg, #f0f4ff 0%, #e8ecf9 100%); min-height: 100vh; padding-bottom: 60px; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+svg { pointer-events: none; }
+.ic { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.ic-lg { width: 26px; height: 26px; } .ic-sm { width: 16px; height: 16px; }
+.hidden { display: none !important; }
+button { font-family: inherit; touch-action: manipulation; }
+
+/* ═══════════ PORTADA ═══════════ */
+.cover { position: fixed; inset: 0; z-index: 1000; overflow: hidden; background: #001a3d; transition: transform .75s cubic-bezier(.7,0,.25,1), opacity .6s ease; }
+.cover.hide { transform: translateY(-101%); opacity: 0; pointer-events: none; }
+.cover-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cover-content { position: relative; z-index: 2; height: 100%; max-width: 460px; margin: 0 auto; padding: max(34px, env(safe-area-inset-top)) 24px max(22px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; overflow-y: auto; }
+.cv-brand { display: flex; align-items: center; gap: 11px; color: #fff; }
+.cv-mark { width: 40px; height: 40px; border-radius: 13px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; font-family: 'Outfit'; font-weight: 800; font-size: 1.15rem; }
+.cv-brand b { font-family: 'Outfit'; font-weight: 800; letter-spacing: .28em; font-size: .95rem; display: block; } .cv-brand span { font-size: .7rem; opacity: .7; letter-spacing: .06em; }
+.cv-hero { margin-top: clamp(26px, 7vh, 64px); color: #fff; max-width: 330px; }
+.cv-hero h1 { font-family: 'Outfit'; font-weight: 800; font-size: clamp(2rem, 9vw, 2.7rem); line-height: 1.04; letter-spacing: -.02em; text-shadow: 0 4px 30px rgba(0,20,60,.5); }
+.cv-hero h1 em { font-style: normal; background: linear-gradient(90deg, #00d2ff, #7ef0d0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cv-hero p { margin-top: 12px; font-size: .95rem; line-height: 1.55; opacity: .85; max-width: 290px; }
+.cv-chips { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+.cv-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 20px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: .72rem; font-weight: 600; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.cv-chip .ic { width: 14px; height: 14px; color: var(--accent-cyan); }
+.glass { margin-top: auto; padding: 20px; border-radius: 28px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%); box-shadow: 0 30px 70px -20px rgba(0,15,50,.7), inset 0 1px 0 rgba(255,255,255,.25); color: #fff; animation: slideUp .8s ease-out; }
+.loc-pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 20px; font-size: .74rem; font-weight: 700; font-family: 'Outfit'; letter-spacing: .04em; margin-bottom: 16px; background: rgba(248,113,113,.2); border: 1px solid rgba(248,113,113,.5); color: #fecaca; transition: all .3s; }
+.loc-pill i { width: 8px; height: 8px; border-radius: 50%; background: #f87171; display: block; }
+.loc-pill.on { background: rgba(52,211,153,.18); border-color: rgba(52,211,153,.5); color: #a7f3d0; } .loc-pill.on i { background: #34d399; animation: blip 1.6s infinite; }
+.cv-t { font-family: 'Outfit'; font-weight: 800; font-size: 1.15rem; margin-bottom: 6px; } .cv-p { font-size: .86rem; line-height: 1.55; opacity: .85; }
+.cv-msg { margin-top: 14px; background: rgba(0,20,60,.35); border: 1px solid rgba(255,255,255,.2); border-radius: 14px; padding: 12px 14px; font-size: .8rem; line-height: 1.6; }
+.glass .lbl { display: block; font-family: 'Outfit'; font-weight: 700; font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.8); margin-bottom: 7px; }
+.g-field { margin-bottom: 14px; }
+.g-sel { position: relative; background: rgba(255,255,255,.14); border: 1.5px solid rgba(255,255,255,.34); border-radius: 16px; transition: all .25s; }
+.g-sel:focus-within { border-color: #fff; background: rgba(255,255,255,.22); box-shadow: 0 0 0 4px rgba(255,255,255,.12); }
+.g-sel::after { content: ''; position: absolute; right: 18px; top: 50%; width: 8px; height: 8px; border-right: 2.5px solid #fff; border-bottom: 2.5px solid #fff; transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+.g-sel select { width: 100%; appearance: none; -webkit-appearance: none; background: transparent; border: none; outline: none; color: #fff; padding: 15px 44px 15px 16px; font-size: 1rem; font-family: 'DM Sans'; min-height: 54px; }
+.g-sel select option { color: #1e293b; background: #fff; }
+.g-sel.dis { opacity: .55; } .g-sel select:disabled { cursor: not-allowed; }
+.g-ext { display: flex; align-items: center; gap: 10px; background: rgba(52,211,153,.16); border: 1.5px solid rgba(52,211,153,.45); border-radius: 14px; padding: 11px 14px; font-size: .84rem; font-weight: 600; margin-bottom: 14px; color: #d1fae5; }
+.g-ext code { font-family: 'Courier New', monospace; font-weight: 800; letter-spacing: .06em; color: #fff; }
+.btn-cover { width: 100%; padding: 17px; border: none; border-radius: 18px; background: #fff; color: var(--primary-blue); font-family: 'Outfit'; font-weight: 800; font-size: 1rem; letter-spacing: .05em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 18px 38px -14px rgba(0,15,50,.7); transition: transform .2s, box-shadow .2s, opacity .2s; position: relative; overflow: hidden; min-height: 56px; }
+.btn-cover::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(0,74,153,.15), transparent); animation: shimmer 3s infinite; }
+.btn-cover:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 22px 44px -14px rgba(0,15,50,.8); } .btn-cover:active { transform: translateY(0); } .btn-cover:disabled { opacity: .5; cursor: not-allowed; } .btn-cover:disabled::after { display: none; }
+.cv-foot { margin-top: 16px; text-align: center; font-size: .72rem; color: rgba(255,255,255,.65); }
+.cv-foot b { color: #fff; letter-spacing: .15em; }
+.g-load { display: flex; align-items: center; gap: 12px; font-size: .9rem; opacity: .9; } .g-err { background: rgba(248,113,113,.2); border: 1px solid rgba(248,113,113,.5); color: #fee2e2; border-radius: 14px; padding: 12px 14px; font-size: .84rem; margin-bottom: 12px; }
+.g-link { background: none; border: none; color: #fff; text-decoration: underline; font-weight: 600; font-size: .84rem; cursor: pointer; margin-top: 8px; }
+.tw { animation: twinkle 3s ease-in-out infinite; } .ripple { transform-box: fill-box; transform-origin: center; animation: rippleR 3.4s ease-out infinite; } .pinfloat { animation: pinf 3s ease-in-out infinite; }
+.route { stroke-dasharray: 5 7; animation: dash 2s linear infinite; }
+
+/* ═══════════ TOPBAR APP ═══════════ */
+.topbar { background: var(--grad); color: #fff; padding: max(20px, env(safe-area-inset-top)) 20px 64px; border-radius: 0 0 34px 34px; position: relative; overflow: hidden; }
+.topbar::before { content: ''; position: absolute; top: -60px; right: -40px; width: 200px; height: 200px; background: rgba(255,255,255,.07); border-radius: 50%; }
+.topbar::after { content: ''; position: absolute; bottom: -80px; left: -50px; width: 180px; height: 180px; background: rgba(0,210,255,.1); border-radius: 50%; }
+.tb { max-width: 560px; margin: 0 auto; position: relative; z-index: 1; }
+.tb-row { display: flex; align-items: center; gap: 12px; }
+.tb-mark { width: 38px; height: 38px; border-radius: 12px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.25); display: flex; align-items: center; justify-content: center; font-family: 'Outfit'; font-weight: 800; }
+.tb-brand { flex: 1; } .tb-brand b { font-family: 'Outfit'; font-weight: 800; letter-spacing: .22em; font-size: .85rem; display: block; } .tb-brand span { font-size: .7rem; opacity: .75; }
+.gps-mini { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 20px; font-size: .7rem; font-weight: 700; font-family: 'Outfit'; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25); }
+.gps-mini i { width: 7px; height: 7px; border-radius: 50%; background: #f87171; } .gps-mini.on i { background: #34d399; animation: blip 1.6s infinite; } .gps-mini.warn i { background: #fbbf24; }
+.greet { margin-top: 24px; display: flex; align-items: center; gap: 14px; }
+.avatar { width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #00d2ff, #0a5fc0); border: 3px solid rgba(255,255,255,.55); display: flex; align-items: center; justify-content: center; font-family: 'Outfit'; font-weight: 800; font-size: 1.2rem; flex-shrink: 0; box-shadow: 0 8px 20px -6px rgba(0,0,0,.4); }
+.greet h2 { font-family: 'Outfit'; font-weight: 800; font-size: 1.35rem; line-height: 1.15; } .greet p { font-size: .8rem; opacity: .8; margin-top: 3px; }
+.clock-row { margin-top: 20px; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.clock { font-family: 'Outfit'; font-weight: 800; font-size: 2.6rem; letter-spacing: -1.5px; line-height: .95; font-variant-numeric: tabular-nums; }
+.clock-date { font-size: .78rem; opacity: .8; margin-top: 6px; text-transform: capitalize; }
+.estado-badge { padding: 7px 14px; border-radius: 20px; font-family: 'Outfit'; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; white-space: nowrap; }
+.eb-sin { background: rgba(255,255,255,.18); color: #fff; border: 2px solid rgba(255,255,255,.45); } .eb-en { background: var(--warn-soft); color: #92400e; } .eb-ok { background: var(--ok-soft); color: #065f46; }
+.steps { display: flex; align-items: center; margin-top: 22px; }
+.st { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 64px; }
+.st-d { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.16); border: 2px solid rgba(255,255,255,.35); display: flex; align-items: center; justify-content: center; transition: all .4s; }
+.st-d .ic { width: 14px; height: 14px; opacity: 0; stroke-width: 3; } .st span { font-size: .66rem; font-weight: 700; opacity: .65; text-transform: uppercase; letter-spacing: .06em; font-family: 'Outfit'; }
+.st.done .st-d { background: #34d399; border-color: #34d399; } .st.done .st-d .ic { opacity: 1; color: #003366; } .st.cur .st-d { background: #fff; border-color: #fff; box-shadow: 0 0 0 5px rgba(255,255,255,.2); } .st.done span, .st.cur span { opacity: 1; }
+.st-l { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.2); margin: 0 -2px 18px; overflow: hidden; } .st-l i { display: block; height: 100%; width: 0; background: #34d399; transition: width .6s; } .st-l.done i { width: 100%; }
+
+/* ═══════════ STAGE ═══════════ */
+.stage { max-width: 560px; margin: -40px auto 0; padding: 0 16px; position: relative; z-index: 2; }
+.card { background: #fff; border-radius: 26px; box-shadow: 0 20px 60px rgba(0,74,153,.14); overflow: hidden; margin-bottom: 18px; animation: slideUp .6s ease-out; }
+.card-body { padding: 24px 22px; }
+.sec-title { font-family: 'Outfit'; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--primary-blue); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.sec-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(0,74,153,.2), transparent); }
+.note { font-size: .8rem; color: var(--text-gray); line-height: 1.55; margin: 14px 0 0; display: flex; gap: 9px; align-items: flex-start; } .note .ic { color: var(--primary-blue); margin-top: 2px; }
+.gps { display: flex; align-items: center; gap: 14px; background: #f8fafc; border: 2px solid var(--line); border-radius: 16px; padding: 12px 15px; margin-bottom: 14px; transition: all .3s; }
+.gps.good { background: #f0fdf4; border-color: #86efac; } .gps.bad { background: var(--warn-soft); border-color: #fcd34d; }
+.gps-ic { width: 40px; height: 40px; border-radius: 12px; background: #fff; color: var(--primary-blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,74,153,.1); } .gps.good .gps-ic { color: var(--ok); } .gps.bad .gps-ic { color: var(--warn); }
+.gps-t { flex: 1; min-width: 0; } .gps-t b { font-family: 'Outfit'; font-size: .9rem; display: block; } .gps-t span { font-size: .74rem; color: var(--text-gray); font-family: 'Courier New', monospace; }
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 20px; } .bars i { width: 5px; border-radius: 2px; background: #cbd5e1; display: block; transition: background .3s; }
+.bars i:nth-child(1) { height: 6px; } .bars i:nth-child(2) { height: 10px; } .bars i:nth-child(3) { height: 15px; } .bars i:nth-child(4) { height: 20px; }
+.bars.l1 i:nth-child(-n+1), .bars.l2 i:nth-child(-n+2), .bars.l3 i:nth-child(-n+3), .bars.l4 i:nth-child(-n+4) { background: var(--ok); } .bars.l1 i:nth-child(-n+1), .bars.l2.warn i:nth-child(-n+2) { background: #f59e0b; }
+.foto-slot { width: 100%; display: flex; align-items: center; gap: 14px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; cursor: pointer; transition: all .2s; text-align: left; }
+.foto-slot:hover { border-color: var(--primary-blue); background: #eff6ff; } .foto-slot.has { border-style: solid; border-color: #86efac; background: #f0fdf4; }
+.foto-thumb { width: 58px; height: 58px; border-radius: 14px; background: #e0e7ff; color: var(--primary-blue); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; } .foto-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.foto-t b { font-family: 'Outfit'; font-size: .92rem; display: block; color: var(--ink); } .foto-t span { font-size: .78rem; color: var(--text-gray); }
+.btn-primary { width: 100%; padding: 16px; background: var(--primary-blue); color: #fff; border: none; border-radius: 16px; font-weight: 800; font-family: 'Outfit'; font-size: .98rem; cursor: pointer; transition: background .3s, transform .15s, box-shadow .3s; box-shadow: 0 10px 26px rgba(0,74,153,.25); letter-spacing: .05em; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; }
+.btn-primary:hover { background: var(--deep-blue); transform: translateY(-2px); } .btn-primary:active { transform: translateY(0); } .btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.btn-out { background: linear-gradient(135deg, #0f766e, #059669); box-shadow: 0 10px 26px rgba(5,150,105,.3); } .btn-out:hover { background: linear-gradient(135deg, #115e59, #047857); }
+.link-btn { background: none; border: none; color: var(--text-gray); font-size: .82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 8px; } .link-btn:hover { color: var(--primary-blue); }
+/* radar oscuro */
+.radar-card { background: linear-gradient(160deg, #001f45 0%, #003b80 100%); border-radius: 22px; padding: 16px 14px 18px; margin-bottom: 16px; position: relative; overflow: hidden; box-shadow: 0 20px 40px -18px rgba(0,40,100,.6); }
+.radar-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 38%, rgba(0,210,255,.18), transparent 60%); }
+.radar { width: 100%; max-width: 270px; margin: 0 auto; display: block; position: relative; }
+.sweep { transform-origin: 120px 120px; animation: spin 4.5s linear infinite; } .me { transition: transform .7s cubic-bezier(.4,0,.2,1); } .pulse { transform-origin: 120px 120px; animation: pulseR 2.4s ease-out infinite; }
+.dist-box { position: relative; text-align: center; margin-top: 8px; color: #fff; } .dist-box b { font-family: 'Outfit'; font-size: 2.1rem; font-weight: 800; display: block; line-height: 1.05; letter-spacing: -.02em; } .dist-box span { font-size: .8rem; font-weight: 600; opacity: .9; }
+.dist-box.in b { color: #6ee7b7; text-shadow: 0 0 22px rgba(52,211,153,.6); } .dist-box.out b { color: #fca5a5; text-shadow: 0 0 22px rgba(248,113,113,.6); }
+.tl { position: relative; padding-left: 30px; } .tl::before { content: ''; position: absolute; left: 10px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--primary-blue), var(--ok)); border-radius: 2px; }
+.tl-item { position: relative; margin-bottom: 18px; } .tl-item:last-child { margin-bottom: 0; } .tl-item::before { content: ''; position: absolute; left: -26px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--primary-blue); } .tl-item.s::before { border-color: var(--ok); }
+.tl-item b { font-family: 'Outfit'; font-size: 1.2rem; display: block; } .tl-item span { font-size: .76rem; color: var(--text-gray); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.total-box { margin-top: 20px; background: var(--grad); color: #fff; border-radius: 18px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; } .total-box span { font-size: .8rem; opacity: .85; } .total-box b { font-family: 'Outfit'; font-size: 1.5rem; }
+.foto-links { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; } .archivo-link { display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: var(--primary-blue); padding: 7px 13px; border-radius: 8px; font-size: .8rem; font-weight: 600; text-decoration: none; border: 1px solid #bfdbfe; }
+.mini-load { display: flex; align-items: center; gap: 12px; color: var(--text-gray); font-size: .9rem; padding: 6px 0; }
+.spinner { width: 26px; height: 26px; border: 3px solid rgba(148,163,184,.35); border-top-color: var(--primary-blue); border-radius: 50%; animation: spin .8s linear infinite; flex-shrink: 0; } .g-load .spinner { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
+.err-box { background: var(--bad-soft); color: #991b1b; border: 1.5px solid #fca5a5; border-radius: 14px; padding: 14px 16px; font-size: .86rem; margin-bottom: 14px; }
+.footer { text-align: center; font-size: .76rem; color: #94a3b8; font-weight: 500; margin-top: 6px; } .footer span { color: var(--primary-blue); font-weight: 700; }
+
+/* ═══════════ MODALES ═══════════ */
+.overlay { position: fixed; inset: 0; background: rgba(0,30,80,.6); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn .2s ease-out; } .overlay.show { display: flex; }
+.modal { background: #fff; border-radius: 26px; width: 100%; max-width: 420px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,30,80,.4); animation: modalSlide .35s cubic-bezier(.34,1.56,.64,1); text-align: center; }
+.modal-top { padding: 30px 24px 22px; color: #fff; } .modal-top.ok { background: linear-gradient(135deg, #0f766e, #059669); } .modal-top.bad { background: linear-gradient(135deg, #b91c1c, #dc2626); } .modal-top.warn { background: linear-gradient(135deg, #b45309, #d97706); } .modal-top.blue { background: var(--grad); }
+.modal-ic { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.45); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; box-shadow: 0 0 0 8px rgba(255,255,255,.1); }
+.modal-ic .ic { width: 36px; height: 36px; stroke-width: 2.6; } .draw { stroke-dasharray: 30; stroke-dashoffset: 30; animation: draw .5s .15s ease-out forwards; }
+.modal-top h3 { font-family: 'Outfit'; font-size: 1.35rem; font-weight: 800; }
+.modal-body { padding: 22px 24px 24px; } .modal-body p { font-size: .92rem; color: #334155; line-height: 1.6; margin-bottom: 14px; }
+.kv { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f1f5f9; font-size: .86rem; text-align: left; } .kv:last-of-type { border-bottom: none; margin-bottom: 14px; } .kv span { color: var(--text-gray); } .kv b { font-weight: 700; text-align: right; }
+.shake { animation: shake .45s; }
+.cam { position: fixed; inset: 0; z-index: 3500; background: #000; display: none; flex-direction: column; } .cam.show { display: flex; }
+.cam video { flex: 1; width: 100%; min-height: 0; object-fit: cover; background: #000; } .cam video.mirror { transform: scaleX(-1); }
+.cam-bar { display: flex; align-items: center; justify-content: space-around; padding: 20px 20px max(24px, env(safe-area-inset-bottom)); background: #000; }
+.cam-round { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,.15); color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.shutter { width: 74px; height: 74px; border-radius: 50%; background: #fff; border: 5px solid rgba(255,255,255,.4); cursor: pointer; } .shutter:active { transform: scale(.92); }
+.cam-top { position: absolute; top: 0; left: 0; right: 0; padding: max(16px, env(safe-area-inset-top)) 16px 30px; background: linear-gradient(rgba(0,0,0,.6), transparent); color: #fff; font-family: 'Outfit'; font-weight: 700; text-align: center; font-size: .95rem; pointer-events: none; }
+.loading-ov { position: fixed; inset: 0; z-index: 4000; background: rgba(0,30,80,.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px; color: #fff; font-weight: 600; font-size: .95rem; text-align: center; padding: 20px; } .loading-ov.show { display: flex; } .loading-ov .spinner { width: 46px; height: 46px; border-color: rgba(255,255,255,.3); border-top-color: #fff; }
+.toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 14px; font-size: .88rem; font-weight: 600; opacity: 0; pointer-events: none; transition: all .3s; z-index: 5000; max-width: 90vw; text-align: center; } .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+@media (max-width: 500px) { .card-body { padding: 22px 16px; } .clock { font-size: 2.2rem; } }
+@media (max-height: 700px) { .cv-hero { margin-top: 18px; } .cv-chips { display: none; } }
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes spin { to { transform: rotate(360deg) } }
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes modalSlide { from { opacity: 0; transform: scale(.92) translateY(20px) } to { opacity: 1; transform: scale(1) translateY(0) } }
+@keyframes pulseR { 0% { transform: scale(1); opacity: .5 } 100% { transform: scale(3.2); opacity: 0 } }
+@keyframes shake { 0%,100% { transform: translateX(0) } 20%,60% { transform: translateX(-8px) } 40%,80% { transform: translateX(8px) } }
+@keyframes blip { 0%,100% { box-shadow: 0 0 0 0 rgba(52,211,153,.7) } 50% { box-shadow: 0 0 0 6px rgba(52,211,153,0) } }
+@keyframes shimmer { 0% { left: -60% } 60%,100% { left: 130% } }
+@keyframes twinkle { 0%,100% { opacity: .25 } 50% { opacity: 1 } }
+@keyframes rippleR { 0% { transform: scale(.3); opacity: .8 } 100% { transform: scale(5); opacity: 0 } }
+@keyframes pinf { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-7px) } }
+@keyframes dash { to { stroke-dashoffset: -24 } }
+@keyframes draw { to { stroke-dashoffset: 0 } }
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-login" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+  <symbol id="i-flip" viewBox="0 0 24 24"><path d="M21 12a9 9 0 00-15.5-6.2L3 8"/><polyline points="3 3 3 8 8 8"/><path d="M3 12a9 9 0 0015.5 6.2L21 16"/><polyline points="21 21 21 16 16 16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></symbol>
+</svg>
+
+<!-- ═════════ PORTADA ═════════ -->
+<div class="cover" id="cover">
+  <svg class="cover-bg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00122e"/><stop offset=".45" stop-color="#003366"/><stop offset=".8" stop-color="#0a5fc0"/><stop offset="1" stop-color="#1b8fd8"/></linearGradient>
+      <radialGradient id="glow" cx="50%" cy="100%" r="70%"><stop offset="0" stop-color="#00d2ff" stop-opacity=".55"/><stop offset="1" stop-color="#00d2ff" stop-opacity="0"/></radialGradient>
+      <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="rgba(255,255,255,.055)" stroke-width="1"/></pattern>
+      <radialGradient id="gridfade" cx="50%" cy="25%" r="65%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>
+      <mask id="gm"><rect width="390" height="844" fill="url(#gridfade)"/></mask>
+      <filter id="blur6"><feGaussianBlur stdDeviation="6"/></filter>
+    </defs>
+    <rect width="390" height="844" fill="url(#sky)"/>
+    <rect width="390" height="844" fill="url(#grid)" mask="url(#gm)"/>
+    <rect y="480" width="390" height="364" fill="url(#glow)"/>
+    <g id="stars"></g>
+    <!-- geocerca -->
+    <g>
+      <circle class="ripple" cx="288" cy="196" r="22" fill="none" stroke="#00d2ff" stroke-width="1.6"/>
+      <circle class="ripple" cx="288" cy="196" r="22" fill="none" stroke="#00d2ff" stroke-width="1.6" style="animation-delay:1.1s"/>
+      <circle class="ripple" cx="288" cy="196" r="22" fill="none" stroke="#00d2ff" stroke-width="1.6" style="animation-delay:2.2s"/>
+      <circle cx="288" cy="196" r="64" fill="rgba(0,210,255,.06)" stroke="rgba(0,210,255,.45)" stroke-width="1.4" stroke-dasharray="4 6"/>
+      <circle cx="288" cy="196" r="34" fill="rgba(0,210,255,.1)"/>
+      <ellipse cx="288" cy="226" rx="16" ry="5" fill="#001a3d" opacity=".5" filter="url(#blur6)"/>
+      <g class="pinfloat"><path d="M288 232c0 0-17-16-17-30a17 17 0 0134 0c0 14-17 30-17 30z" fill="#fff"/><circle cx="288" cy="202" r="7" fill="#004a99"/></g>
+    </g>
+    <path class="route" d="M30 330 C 110 300, 160 250, 258 215" fill="none" stroke="rgba(0,210,255,.6)" stroke-width="2" stroke-linecap="round"/>
+    <g id="skyline"></g>
+  </svg>
+
+  <div class="cover-content">
+    <div class="cv-brand"><div class="cv-mark">O</div><div><b>OIKOS</b><span>Control de ingresos</span></div></div>
+    <div class="cv-hero">
+      <h1>Tu jornada,<br>en el <em>lugar correcto.</em></h1>
+      <p>Registra tu ingreso y salida con ubicación y fotografía verificadas.</p>
+      <div class="cv-chips">
+        <span class="cv-chip"><svg class="ic"><use href="#i-pin"/></svg>Geocerca 20 m</span>
+        <span class="cv-chip"><svg class="ic"><use href="#i-camera"/></svg>Foto</span>
+        <span class="cv-chip"><svg class="ic"><use href="#i-shield"/></svg>Verificado</span>
+      </div>
+    </div>
+
+    <div class="glass">
+      <div class="loc-pill" id="locPill"><i></i><span id="locPillTxt">Ubicación requerida</span></div>
+
+      <!-- estado A: falta ubicación -->
+      <div id="cvLoc">
+        <div class="cv-t" id="gateTitle">Activa tu ubicación</div>
+        <div class="cv-p" id="gateText">Para registrar tu ingreso o salida necesitamos saber dónde estás. Sin ubicación no es posible continuar.</div>
+        <div class="cv-msg hidden" id="gateMsg"></div>
+        <button class="btn-cover" id="gateBtn" style="margin-top:16px" onclick="pedirUbicacion()"><svg class="ic"><use href="#i-pin"/></svg><span id="gateBtnTxt">Permitir ubicación</span></button>
+      </div>
+
+      <!-- estado B: formulario -->
+      <div id="cvForm" class="hidden">
+        <div id="idLoad" class="g-load"><div class="spinner"></div>Cargando directorio...</div>
+        <div id="idErr" class="g-err hidden"></div>
+        <button class="g-link hidden" id="btnReintentarDir" onclick="cargarDirectorio()">Reintentar</button>
+        <div id="idForm" class="hidden">
+          <div class="g-field"><label class="lbl" for="selSala">Sala de ventas</label>
+            <div class="g-sel"><select id="selSala" onchange="onSala()"><option value="">Selecciona tu sala</option></select></div></div>
+          <div class="g-field"><label class="lbl" for="selAsesor">Asesor</label>
+            <div class="g-sel dis" id="wrapAsesor"><select id="selAsesor" onchange="onAsesor()" disabled><option value="">Primero elige la sala</option></select></div></div>
+          <div class="g-ext hidden" id="extBox"><svg class="ic"><use href="#i-shield"/></svg><span>Ext <code id="extTxt"></code> · <span id="cargoTxt"></span></span></div>
+          <button class="btn-cover" id="btnContinuar" onclick="continuar()" disabled><span>COMENZAR</span><svg class="ic"><use href="#i-arrow"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="cv-foot"><b>OIKOS</b> · Grupo Empresarial OIKOS S.A.S</div>
+  </div>
+</div>
+
+<!-- ═════════ APP ═════════ -->
+<div id="app" inert>
+  <header class="topbar">
+    <div class="tb">
+      <div class="tb-row">
+        <div class="tb-mark">O</div>
+        <div class="tb-brand"><b>OIKOS</b><span>Control de ingresos</span></div>
+        <span class="gps-mini" id="gpsMini"><i></i><span id="gpsMiniTxt">GPS</span></span>
+      </div>
+      <div class="greet">
+        <div class="avatar" id="avatar">--</div>
+        <div><h2 id="jNombre">Hola</h2><p id="jSala">—</p></div>
+      </div>
+      <div class="clock-row">
+        <div><div class="clock" id="clock">--:--:--</div><div class="clock-date" id="clockDate"></div></div>
+        <span class="estado-badge eb-sin" id="jBadge">Sin entrada</span>
+      </div>
+      <div class="steps">
+        <div class="st" id="st1"><div class="st-d"><svg class="ic"><use href="#i-check"/></svg></div><span>Ingreso</span></div>
+        <div class="st-l" id="sl1"><i></i></div>
+        <div class="st" id="st2"><div class="st-d"><svg class="ic"><use href="#i-check"/></svg></div><span>En sala</span></div>
+        <div class="st-l" id="sl2"><i></i></div>
+        <div class="st" id="st3"><div class="st-d"><svg class="ic"><use href="#i-check"/></svg></div><span>Salida</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="card">
+      <div class="card-body">
+        <div id="jLoad" class="mini-load hidden"><div class="spinner"></div>Consultando tu jornada...</div>
+        <div id="jErr" class="err-box hidden"></div>
+
+        <div id="gpsBox" class="gps hidden">
+          <div class="gps-ic"><svg class="ic"><use href="#i-pin"/></svg></div>
+          <div class="gps-t"><b id="gpsTitle">Buscando señal...</b><span id="gpsCoords">—</span></div>
+          <div class="bars" id="gpsBars"><i></i><i></i><i></i><i></i></div>
+        </div>
+
+        <div id="pEntrada" class="hidden">
+          <div class="sec-title">Registrar ingreso</div>
+          <button class="foto-slot" id="slotE" onclick="abrirCamara()">
+            <div class="foto-thumb" id="thumbE"><svg class="ic ic-lg"><use href="#i-camera"/></svg></div>
+            <div class="foto-t"><b id="fotoETitle">Tomar fotografía</b><span id="fotoESub">Obligatoria para registrar el ingreso</span></div>
+          </button>
+          <button class="btn-primary" id="btnEntrada" onclick="registrar('entrada')"><svg class="ic"><use href="#i-login"/></svg>REGISTRAR INGRESO</button>
+          <p class="note"><svg class="ic ic-sm"><use href="#i-info"/></svg><span>Tu ubicación de ingreso quedará como punto de referencia. La salida solo podrá registrarse a máximo <b class="radioTxt">20</b> metros de allí.</span></p>
+        </div>
+
+        <div id="pSalida" class="hidden">
+          <div class="sec-title">Registrar salida</div>
+          <div class="radar-card">
+            <svg class="radar" viewBox="0 0 240 240" id="radar" aria-label="Radar de distancia al punto de ingreso">
+              <defs>
+                <radialGradient id="rg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#0a4a94"/><stop offset="1" stop-color="#012a5c"/></radialGradient>
+                <linearGradient id="sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#00d2ff" stop-opacity="0"/><stop offset="1" stop-color="#00d2ff" stop-opacity=".4"/></linearGradient>
+                <clipPath id="clipR"><circle cx="120" cy="120" r="116"/></clipPath>
+              </defs>
+              <circle cx="120" cy="120" r="116" fill="url(#rg)" stroke="rgba(0,210,255,.5)" stroke-width="2"/>
+              <g clip-path="url(#clipR)">
+                <circle cx="120" cy="120" r="87" fill="none" stroke="rgba(0,210,255,.14)"/>
+                <circle cx="120" cy="120" r="29" fill="none" stroke="rgba(0,210,255,.14)"/>
+                <g class="sweep"><path d="M120 120 L236 120 A116 116 0 0 0 202 38 Z" fill="url(#sw)"/></g>
+                <line x1="4" y1="120" x2="236" y2="120" stroke="rgba(0,210,255,.2)" stroke-dasharray="3 5"/>
+                <line x1="120" y1="4" x2="120" y2="236" stroke="rgba(0,210,255,.2)" stroke-dasharray="3 5"/>
+                <circle cx="120" cy="120" r="58" fill="rgba(52,211,153,.1)" stroke="#34d399" stroke-width="2" stroke-dasharray="6 5" id="ringRadio"/>
+                <circle class="pulse" cx="120" cy="120" r="7" fill="#00d2ff"/>
+                <circle cx="120" cy="120" r="9" fill="#fff" stroke="#00d2ff" stroke-width="3"/>
+                <g class="me" id="meG" style="transform:translate(0px,0px)">
+                  <circle id="meAcc" cx="120" cy="120" r="10" fill="rgba(52,211,153,.18)" stroke="rgba(52,211,153,.5)" stroke-width="1"/>
+                  <circle id="meDot" cx="120" cy="120" r="8" fill="#34d399" stroke="#fff" stroke-width="3"/>
+                </g>
+              </g>
+            </svg>
+            <div class="dist-box" id="distBox"><b id="distVal">—</b><span id="distTxt">Calculando distancia al punto de ingreso...</span></div>
+          </div>
+          <button class="foto-slot" id="slotS" onclick="abrirCamara()">
+            <div class="foto-thumb" id="thumbS"><svg class="ic ic-lg"><use href="#i-camera"/></svg></div>
+            <div class="foto-t"><b id="fotoSTitle">Tomar fotografía</b><span id="fotoSSub">Obligatoria para registrar la salida</span></div>
+          </button>
+          <button class="btn-primary btn-out" id="btnSalida" onclick="registrar('salida')"><svg class="ic"><use href="#i-logout"/></svg>REGISTRAR SALIDA</button>
+          <p class="note"><svg class="ic ic-sm"><use href="#i-info"/></svg><span>Ingresaste a las <b id="entradaHora">--:--</b>. La salida solo se registra dentro de <b class="radioTxt">20</b> m del punto de ingreso; si estás fuera de rango se notificará por correo.</span></p>
+        </div>
+
+        <div id="pCompleta" class="hidden">
+          <div class="sec-title">Jornada de hoy</div>
+          <div class="tl">
+            <div class="tl-item"><span>Ingreso</span><b id="tlE">--:--:--</b></div>
+            <div class="tl-item s"><span>Salida</span><b id="tlS">--:--:--</b></div>
+          </div>
+          <div class="total-box"><span>Tiempo en sala</span><b id="tlTot">—</b></div>
+          <div class="foto-links" id="fotoLinks"></div>
+          <p class="note"><svg class="ic ic-sm"><use href="#i-check"/></svg><span>La jornada de hoy ya quedó registrada. ¡Hasta mañana!</span></p>
+        </div>
+
+        <div style="text-align:center;margin-top:14px">
+          <button class="link-btn" onclick="cambiarPersona()"><svg class="ic ic-sm"><use href="#i-refresh"/></svg>No soy yo · cambiar asesor</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>OIKOS</span> · Grupo Empresarial OIKOS S.A.S · Control de Ingresos</div>
+  </main>
+</div>
+
+<!-- CÁMARA -->
+<div class="cam" id="cam">
+  <div class="cam-top">Fotografía de comprobación</div>
+  <video id="camVideo" autoplay playsinline muted class="mirror"></video>
+  <div class="cam-bar">
+    <button class="cam-round" onclick="cerrarCamara()" aria-label="Cancelar"><svg class="ic"><use href="#i-x"/></svg></button>
+    <button class="shutter" onclick="capturarFoto()" aria-label="Tomar foto"></button>
+    <button class="cam-round" onclick="voltearCamara()" aria-label="Cambiar cámara"><svg class="ic"><use href="#i-flip"/></svg></button>
+  </div>
+</div>
+<input type="file" id="fileFallback" accept="image/*" capture="user" class="hidden" onchange="fotoDesdeArchivo(this)">
+
+<div class="overlay" id="ovRes">
+  <div class="modal" id="modalRes">
+    <div class="modal-top" id="resTop"><div class="modal-ic"><svg class="ic" id="resIc" viewBox="0 0 24 24"></svg></div><h3 id="resTitle"></h3></div>
+    <div class="modal-body"><p id="resMsg"></p><div id="resKv"></div><button class="btn-primary" onclick="cerrarRes()">ENTENDIDO</button></div>
+  </div>
+</div>
+<div class="loading-ov" id="loadingOv"><div class="spinner"></div><span id="loadingMsg">Procesando...</span></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═════════ CONFIG ═════════ */
+// Solo se usa cuando esta página está en GitHub Pages. Dentro de Apps Script se comunica sola (google.script.run).
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxm8ftAWYK2elkwMEZOD0_rgHwPHgozQTugabY1rIysNYI_PDHLq447a9j5ZusHguRh/exec';
+let CFG = { radio: 20, precisionMax: 50 };
+
+/* ═════════ ESTADO ═════════ */
+let DIR = {}, dirCargado = false;
+let user = null, fase = null, reg = null, pos = null, watchId = null, foto = '', enviando = false, locOk = false;
+const $ = id => document.getElementById(id);
+const store = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }, del(k){ try { localStorage.removeItem(k); } catch(e){} } };
+function toast(msg, ms) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms || 2800); }
+function loading(on, msg) { $('loadingMsg').textContent = msg || 'Procesando...'; $('loadingOv').classList.toggle('show', !!on); }
+
+/* ═════════ API (Apps Script embebido o fetch desde GitHub) ═════════ */
+const EN_GAS = typeof google !== 'undefined' && google.script && google.script.run;
+function gs(fn, arg) { return new Promise((ok, ko) => google.script.run.withSuccessHandler(ok).withFailureHandler(e => ko(new Error((e && e.message) || e))) [fn](arg)); }
+async function api(method, params, body) {
+  if (EN_GAS) return method === 'GET' ? gs('apiGet', params) : gs('apiPost', body);
+  if (!GAS_URL || GAS_URL.indexOf('PEGAR_AQUI') === 0) throw new Error('Falta configurar GAS_URL en el index.');
+  if (method === 'GET') return (await fetch(GAS_URL + '?' + new URLSearchParams(params).toString(), { redirect: 'follow' })).json();
+  return (await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), redirect: 'follow' })).json();
+}
+
+/* ═════════ DECORADO DE PORTADA (ciudad procedural) ═════════ */
+(function decorar() {
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let s = ''; for (let i = 0; i < 46; i++) s += '<circle class="tw" cx="' + (rnd() * 390).toFixed(0) + '" cy="' + (rnd() * 420).toFixed(0) + '" r="' + (0.5 + rnd() * 1.1).toFixed(1) + '" fill="#fff" style="animation-delay:' + (rnd() * 3).toFixed(1) + 's"/>';
+  $('stars').innerHTML = s;
+  const capas = [
+    { h: [70, 190], w: [24, 44], fill: '#0b4f9c', op: .5, win: false },
+    { h: [60, 150], w: [26, 48], fill: '#073c7a', op: .85, win: true },
+    { h: [40, 112], w: [30, 54], fill: '#022a58', op: 1, win: true }
+  ];
+  let out = '';
+  capas.forEach((c, ci) => {
+    let x = -14 - ci * 9;
+    while (x < 400) {
+      const w = c.w[0] + rnd() * (c.w[1] - c.w[0]), h = c.h[0] + rnd() * (c.h[1] - c.h[0]), y = 844 - h;
+      out += '<rect x="' + x.toFixed(0) + '" y="' + y.toFixed(0) + '" width="' + w.toFixed(0) + '" height="' + h.toFixed(0) + '" fill="' + c.fill + '" opacity="' + c.op + '"/>';
+      if (c.win) for (let wy = y + 9; wy < 836; wy += 11) for (let wx = x + 5; wx < x + w - 5; wx += 8)
+        if (rnd() > .62) out += '<rect x="' + wx.toFixed(0) + '" y="' + wy.toFixed(0) + '" width="3" height="4" rx=".6" fill="' + (rnd() > .5 ? '#ffd98a' : '#7fe3ff') + '" class="tw" style="animation-delay:' + (rnd() * 4).toFixed(1) + 's;animation-duration:' + (2 + rnd() * 4).toFixed(1) + 's"/>';
+      x += w + 2 + rnd() * 4;
+    }
+  });
+  $('skyline').innerHTML = out;
+})();
+
+/* ═════════ UBICACIÓN OBLIGATORIA ═════════ */
+function pill(on, txt) { $('locPill').classList.toggle('on', on); $('locPillTxt').textContent = txt; const m = $('gpsMini'); m.classList.toggle('on', on); $('gpsMiniTxt').textContent = on ? 'GPS activo' : 'Sin GPS'; }
+function locGate(modo) {
+  locOk = false; $('app').inert = true;
+  $('cover').classList.remove('hide');
+  $('cvLoc').classList.remove('hidden'); $('cvForm').classList.add('hidden');
+  pill(false, 'Ubicación requerida');
+  const msg = $('gateMsg'); msg.classList.add('hidden');
+  $('gateBtn').classList.remove('hidden');
+  if (modo === 'denegado') {
+    $('gateTitle').textContent = 'Ubicación bloqueada';
+    $('gateText').textContent = 'El permiso de ubicación está desactivado para esta página. Sin él no puedes registrar ingresos ni salidas.';
+    $('gateBtnTxt').textContent = 'Ya la activé, reintentar';
+    msg.classList.remove('hidden');
+    msg.innerHTML = '<b>Cómo activarla</b><br>• <b>Android / Chrome:</b> toca el candado junto a la dirección › Permisos › Ubicación › Permitir.<br>• <b>iPhone / Safari:</b> Ajustes › Privacidad › Servicios de localización › Safari › Al usar la app.<br>Luego vuelve y toca el botón.';
+  } else if (modo === 'error') {
+    $('gateTitle').textContent = 'No pudimos ubicarte';
+    $('gateText').textContent = 'Revisa que el GPS del teléfono esté encendido y que tengas señal; luego reintenta.';
+    $('gateBtnTxt').textContent = 'Reintentar';
+  } else if (modo === 'nosoporte') {
+    $('gateTitle').textContent = 'Navegador no compatible';
+    $('gateText').textContent = 'Este navegador no permite acceder a la ubicación. Abre el enlace en Chrome o Safari.';
+    $('gateBtn').classList.add('hidden');
+  } else { $('gateBtnTxt').textContent = 'Permitir ubicación'; }
+}
+function pedirUbicacion() {
+  if (!('geolocation' in navigator)) return locGate('nosoporte');
+  $('gateBtnTxt').textContent = 'Buscando ubicación...';
+  navigator.geolocation.getCurrentPosition(p => { onPos(p); ubicacionLista(); iniciarWatch(); },
+    e => locGate(e.code === 1 ? 'denegado' : 'error'),
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+}
+function iniciarWatch() {
+  if (watchId !== null) return;
+  watchId = navigator.geolocation.watchPosition(onPos, e => { if (e.code === 1) { detenerWatch(); locGate('denegado'); } else { pos = null; pintarGps(); } },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 25000 });
+}
+function detenerWatch() { if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; } }
+function onPos(p) {
+  pos = { lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy, t: Date.now() };
+  if (locOk) pill(true, 'Ubicación activa · ±' + Math.round(pos.acc) + ' m');
+  const m = $('gpsMini'); m.classList.toggle('warn', pos.acc > CFG.precisionMax); if (pos.acc > CFG.precisionMax) { m.classList.remove('on'); $('gpsMiniTxt').textContent = 'Señal débil'; }
+  pintarGps(); pintarRadar();
+}
+async function ubicacionLista() {
+  locOk = true; pill(true, 'Ubicación activa · ±' + Math.round(pos.acc) + ' m');
+  $('cvLoc').classList.add('hidden'); $('cvForm').classList.remove('hidden');
+  if (!dirCargado) await cargarDirectorio();
+  const guardado = store.get('oikos_geo_user');
+  if (guardado && dirCargado && !user) { user = guardado; entrar(); }
+  else if (user) entrar();
+}
+function distM(a, b, c, d) { const R = 6371000, r = Math.PI / 180, dLat = (c - a) * r, dLng = (d - b) * r; const x = Math.sin(dLat / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)); }
+
+function pintarGps() {
+  const box = $('gpsBox'), bars = $('gpsBars');
+  if (fase === 'COMPLETA' || !fase) { box.classList.add('hidden'); return; }
+  box.classList.remove('hidden', 'good', 'bad');
+  if (!pos) { $('gpsTitle').textContent = 'Buscando señal GPS...'; $('gpsCoords').textContent = '—'; bars.className = 'bars'; return; }
+  const acc = Math.round(pos.acc), ok = pos.acc <= CFG.precisionMax;
+  const lvl = pos.acc <= 10 ? 4 : pos.acc <= 20 ? 3 : pos.acc <= CFG.precisionMax ? 2 : 1;
+  bars.className = 'bars l' + lvl + (lvl <= 2 && ok ? ' warn' : '');
+  box.classList.add(ok ? 'good' : 'bad');
+  $('gpsTitle').textContent = ok ? 'Ubicación lista · ±' + acc + ' m' : 'Señal débil · ±' + acc + ' m';
+  $('gpsCoords').textContent = pos.lat.toFixed(5) + ', ' + pos.lng.toFixed(5);
+}
+
+function pintarRadar() {
+  if (fase !== 'EN_JORNADA' || !reg || !pos) return;
+  const rango = Math.max(40, CFG.radio * 2), px = 116 / rango;
+  const d = distM(reg.lat, reg.lng, pos.lat, pos.lng);
+  const kx = 111320 * Math.cos(reg.lat * Math.PI / 180), ky = 110540;
+  let dx = (pos.lng - reg.lng) * kx * px, dy = -(pos.lat - reg.lat) * ky * px;
+  const mod = Math.hypot(dx, dy), max = 106; if (mod > max) { dx *= max / mod; dy *= max / mod; }
+  $('meG').style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)';
+  const dentro = d <= CFG.radio;
+  $('meDot').setAttribute('fill', dentro ? '#34d399' : '#f87171');
+  const a = $('meAcc'); a.setAttribute('r', Math.min(Math.max(pos.acc * px, 8), 60).toFixed(1));
+  a.setAttribute('fill', dentro ? 'rgba(52,211,153,.18)' : 'rgba(248,113,113,.18)'); a.setAttribute('stroke', dentro ? 'rgba(52,211,153,.5)' : 'rgba(248,113,113,.5)');
+  $('ringRadio').setAttribute('r', (CFG.radio * px).toFixed(1));
+  const box = $('distBox'); box.classList.remove('in', 'out'); box.classList.add(dentro ? 'in' : 'out');
+  $('distVal').textContent = d < 1000 ? Math.round(d) + ' m' : (d / 1000).toFixed(2) + ' km';
+  $('distTxt').textContent = dentro ? 'Dentro del rango · puedes registrar tu salida' : 'Fuera del rango · acércate al punto de ingreso (máx. ' + CFG.radio + ' m)';
+}
+
+/* ═════════ DIRECTORIO / IDENTIFICACIÓN ═════════ */
+function $$radio() { document.querySelectorAll('.radioTxt').forEach(n => n.textContent = CFG.radio); }
+async function cargarDirectorio() {
+  $('idLoad').classList.remove('hidden'); $('idForm').classList.add('hidden'); $('idErr').classList.add('hidden'); $('btnReintentarDir').classList.add('hidden');
+  try {
+    const d = await api('GET', { action: 'directorio' });
+    if (!d.success) throw new Error(d.error || 'Error al leer el directorio');
+    DIR = d.salas; if (d.config) CFG = d.config; $$radio();
+    const s = $('selSala'); s.innerHTML = '<option value="">Selecciona tu sala</option>';
+    Object.keys(DIR).sort((a, b) => a.localeCompare(b, 'es')).forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; s.appendChild(o); });
+    $('idLoad').classList.add('hidden'); $('idForm').classList.remove('hidden'); dirCargado = true;
+  } catch (e) {
+    $('idLoad').classList.add('hidden'); $('idErr').textContent = 'No se pudo cargar el directorio. ' + e.message; $('idErr').classList.remove('hidden'); $('btnReintentarDir').classList.remove('hidden');
+  }
+}
+function onSala() {
+  const sala = $('selSala').value, a = $('selAsesor'), w = $('wrapAsesor');
+  $('extBox').classList.add('hidden'); $('btnContinuar').disabled = true; a.innerHTML = '';
+  if (!sala) { a.innerHTML = '<option value="">Primero elige la sala</option>'; a.disabled = true; w.classList.add('dis'); return; }
+  a.innerHTML = '<option value="">Selecciona tu nombre</option>';
+  DIR[sala].forEach(p => { const o = document.createElement('option'); o.value = p.ext; o.textContent = p.asesor; a.appendChild(o); });
+  a.disabled = false; w.classList.remove('dis');
+}
+function onAsesor() {
+  const sala = $('selSala').value, ext = $('selAsesor').value, p = (DIR[sala] || []).find(x => x.ext === ext);
+  if (!p) { $('extBox').classList.add('hidden'); $('btnContinuar').disabled = true; return; }
+  $('extTxt').textContent = p.ext; $('cargoTxt').textContent = p.cargo || 'Asesor'; $('extBox').classList.remove('hidden'); $('btnContinuar').disabled = false;
+}
+function continuar() {
+  if (!locOk) return;
+  const sala = $('selSala').value, ext = $('selAsesor').value, p = (DIR[sala] || []).find(x => x.ext === ext); if (!p) return;
+  user = { ext: p.ext, asesor: p.asesor, cargo: p.cargo, sala: sala };
+  store.set('oikos_geo_user', user); entrar();
+}
+function cambiarPersona() {
+  if (!confirm('¿Cambiar de asesor en este dispositivo?')) return;
+  store.del('oikos_geo_user'); user = null; fase = null; reg = null; foto = '';
+  $('app').inert = true; $('cover').classList.remove('hide'); $('selSala').value = ''; onSala();
+}
+
+/* ═════════ JORNADA ═════════ */
+function titulo(n) { return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase(); }
+function entrar() {
+  $('cover').classList.add('hide'); $('app').inert = false; window.scrollTo(0, 0);
+  const p = user.asesor.trim().split(/\s+/);
+  $('avatar').textContent = ((p[0] || '')[0] + ((p[1] || '')[0] || '')).toUpperCase();
+  $('jNombre').textContent = 'Hola, ' + titulo(p[0] || ''); $('jSala').textContent = user.asesor + ' · ' + user.sala + ' · Ext ' + user.ext;
+  consultarEstado();
+}
+async function consultarEstado() {
+  ['pEntrada', 'pSalida', 'pCompleta', 'gpsBox'].forEach(i => $(i).classList.add('hidden'));
+  $('jErr').classList.add('hidden'); $('jLoad').classList.remove('hidden');
+  try {
+    const d = await api('GET', { action: 'estado', ext: user.ext });
+    if (!d.success) throw new Error(d.error || 'Error consultando la jornada');
+    if (d.config) { CFG = d.config; $$radio(); }
+    aplicarEstado(d.fase, d.registro);
+  } catch (e) {
+    $('jErr').innerHTML = 'No se pudo consultar tu jornada. ' + e.message + '<br><button class="link-btn" onclick="consultarEstado()"><svg class="ic ic-sm"><use href="#i-refresh"/></svg>Reintentar</button>';
+    $('jErr').classList.remove('hidden');
+  }
+  $('jLoad').classList.add('hidden');
+}
+function pasos(f) {
+  const n = f === 'SIN_ENTRADA' ? 1 : f === 'EN_JORNADA' ? 2 : 4;
+  [1, 2, 3].forEach(i => { const e = $('st' + i); e.className = 'st' + (i < n ? ' done' : i === n ? ' cur' : ''); });
+  $('sl1').classList.toggle('done', n > 1); $('sl2').classList.toggle('done', n > 2);
+}
+function aplicarEstado(f, r) {
+  fase = f; reg = r; foto = ''; resetFotoUI(); pasos(f);
+  ['pEntrada', 'pSalida', 'pCompleta'].forEach(i => $(i).classList.add('hidden'));
+  const b = $('jBadge');
+  if (f === 'SIN_ENTRADA') { b.className = 'estado-badge eb-sin'; b.textContent = 'Sin entrada'; $('pEntrada').classList.remove('hidden'); }
+  else if (f === 'EN_JORNADA') { b.className = 'estado-badge eb-en'; b.textContent = 'En jornada'; $('pSalida').classList.remove('hidden'); $('entradaHora').textContent = r.entradaTxt; }
+  else { b.className = 'estado-badge eb-ok'; b.textContent = 'Completa'; $('pCompleta').classList.remove('hidden'); pintarCompleta(r); }
+  pintarGps(); pintarRadar();
+}
+function pintarCompleta(r) {
+  $('tlE').textContent = r.entradaTxt; $('tlS').textContent = r.salidaTxt;
+  const min = Math.max(0, Math.round((r.salidaMs - r.entradaMs) / 60000));
+  $('tlTot').textContent = Math.floor(min / 60) + ' h ' + String(min % 60).padStart(2, '0') + ' min';
+  const l = $('fotoLinks'); l.innerHTML = '';
+  [['Foto de ingreso', r.fotoEntrada], ['Foto de salida', r.fotoSalida]].forEach(x => { if (!x[1]) return; const a = document.createElement('a'); a.className = 'archivo-link'; a.href = x[1]; a.target = '_blank'; a.rel = 'noopener'; a.textContent = x[0]; l.appendChild(a); });
+  l.classList.toggle('hidden', !l.children.length);
+}
+function tick() {
+  const d = new Date();
+  $('clock').textContent = d.toLocaleTimeString('es-CO', { hour12: false, timeZone: 'America/Bogota' });
+  $('clockDate').textContent = d.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Bogota' });
+}
+setInterval(tick, 1000); tick();
+
+/* ═════════ CÁMARA / FOTO ═════════ */
+let stream = null, facing = 'user';
+async function abrirCamara() { if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return $('fileFallback').click(); $('cam').classList.add('show'); await iniciarStream(); }
+async function iniciarStream() {
+  detenerStream();
+  try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false }); const v = $('camVideo'); v.srcObject = stream; v.classList.toggle('mirror', facing === 'user'); await v.play(); }
+  catch (e) { cerrarCamara(); $('fileFallback').click(); }
+}
+function detenerStream() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
+function cerrarCamara() { detenerStream(); $('cam').classList.remove('show'); }
+function voltearCamara() { facing = facing === 'user' ? 'environment' : 'user'; iniciarStream(); }
+function capturarFoto() { const v = $('camVideo'); if (!v.videoWidth) return; procesarImagen(v, v.videoWidth, v.videoHeight); cerrarCamara(); }
+function fotoDesdeArchivo(inp) { const f = inp.files && inp.files[0]; if (!f) return; const img = new Image(), url = URL.createObjectURL(f); img.onload = () => { procesarImagen(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(url); }; img.src = url; inp.value = ''; }
+function procesarImagen(src, w, h) {
+  const esc = Math.min(1, 1024 / Math.max(w, h)), W = Math.round(w * esc), H = Math.round(h * esc);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d'); x.drawImage(src, 0, 0, W, H);
+  const fs = Math.max(12, Math.round(W / 38)), barH = fs * 3.6;
+  x.fillStyle = 'rgba(0,40,100,.72)'; x.fillRect(0, H - barH, W, barH); x.fillStyle = '#fff'; x.textBaseline = 'top';
+  x.font = '800 ' + fs + 'px Outfit, Arial'; x.fillText('OIKOS · ' + user.sala, fs * .7, H - barH + fs * .5);
+  x.font = '500 ' + (fs * .9) + 'px Arial';
+  x.fillText(user.asesor + ' · ' + new Date().toLocaleString('es-CO', { hour12: false, timeZone: 'America/Bogota' }), fs * .7, H - barH + fs * 1.6);
+  if (pos) x.fillText(pos.lat.toFixed(5) + ', ' + pos.lng.toFixed(5) + ' (±' + Math.round(pos.acc) + ' m)', fs * .7, H - barH + fs * 2.6);
+  foto = c.toDataURL('image/jpeg', 0.72); pintarFotoUI();
+}
+function pintarFotoUI() {
+  const e = fase === 'SIN_ENTRADA';
+  $(e ? 'slotE' : 'slotS').classList.add('has'); $(e ? 'thumbE' : 'thumbS').innerHTML = '<img alt="foto" src="' + foto + '">';
+  $(e ? 'fotoETitle' : 'fotoSTitle').textContent = 'Fotografía lista'; $(e ? 'fotoESub' : 'fotoSSub').textContent = 'Toca para volver a tomarla';
+}
+function resetFotoUI() {
+  ['slotE', 'slotS'].forEach(i => $(i).classList.remove('has'));
+  ['thumbE', 'thumbS'].forEach(i => $(i).innerHTML = '<svg class="ic ic-lg"><use href="#i-camera"/></svg>');
+  $('fotoETitle').textContent = $('fotoSTitle').textContent = 'Tomar fotografía';
+  $('fotoESub').textContent = 'Obligatoria para registrar el ingreso'; $('fotoSSub').textContent = 'Obligatoria para registrar la salida';
+}
+
+/* ═════════ REGISTRAR ═════════ */
+async function registrar(tipo) {
+  if (enviando) return;
+  if (!pos) return toast('Aún no tenemos tu ubicación. Espera un momento.');
+  if (Date.now() - pos.t > 30000) return toast('Ubicación desactualizada. Espera unos segundos.');
+  if (pos.acc > CFG.precisionMax) return mostrarRes('warn', 'Señal GPS débil', 'La precisión actual es de ±' + Math.round(pos.acc) + ' m y se requiere ±' + CFG.precisionMax + ' m o menos. Acércate a una ventana o zona abierta y espera unos segundos.');
+  if (!foto) return toast('Falta la fotografía de comprobación.');
+  enviando = true; loading(true, tipo === 'entrada' ? 'Registrando ingreso...' : 'Validando ubicación y registrando salida...');
+  try {
+    const d = await api('POST', null, { accion: tipo, ext: user.ext, lat: pos.lat, lng: pos.lng, acc: pos.acc, foto: foto, ua: navigator.userAgent });
+    loading(false);
+    if (d.success) {
+      aplicarEstado(d.fase, d.registro);
+      if (tipo === 'entrada') mostrarRes('ok', 'Ingreso registrado', 'Tu ingreso quedó guardado. Esta ubicación es ahora tu punto de referencia para la salida.', [['Hora', d.registro.entradaTxt], ['Rango de salida', CFG.radio + ' m']]);
+      else mostrarRes('ok', 'Salida registrada', 'Tu salida quedó registrada correctamente.', [['Ingreso', d.registro.entradaTxt], ['Salida', d.registro.salidaTxt], ['Distancia al ingreso', (d.registro.distanciaSalida != null ? d.registro.distanciaSalida : 0) + ' m']]);
+    } else if (d.code === 'FUERA_DE_RANGO') {
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      mostrarRes('bad', 'Fuera de rango', 'No estás dentro del rango permitido para registrar la salida. El intento quedó guardado y se notificó por correo.', [['Distancia al ingreso', d.distancia + ' m'], ['Rango permitido', d.radio + ' m'], ['Hora del intento', d.horaIntento], ['Intentos hoy', String(d.intentos)]]);
+    } else if (d.code === 'PRECISION_BAJA') { mostrarRes('warn', 'Señal GPS débil', d.error); }
+    else if (d.code === 'YA_ENTRADA' || d.code === 'JORNADA_COMPLETA' || d.code === 'SIN_ENTRADA') { mostrarRes('blue', 'Estado actualizado', d.error); consultarEstado(); }
+    else { mostrarRes('bad', 'No se pudo registrar', d.error || 'Error desconocido'); }
+  } catch (e) { loading(false); mostrarRes('bad', 'Sin conexión', 'No se pudo comunicar con el servidor. Verifica tu internet e intenta de nuevo. ' + e.message); }
+  enviando = false;
+}
+const ICONOS = {
+  ok: '<polyline class="draw" points="20 6 9 17 4 12"/>',
+  alert: '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
+};
+function mostrarRes(tipo, titulo, msg, kv) {
+  $('resTop').className = 'modal-top ' + tipo; $('resIc').innerHTML = ICONOS[tipo === 'ok' ? 'ok' : tipo === 'blue' ? 'info' : 'alert'];
+  $('resTitle').textContent = titulo; $('resMsg').textContent = msg;
+  const k = $('resKv'); k.innerHTML = '';
+  (kv || []).forEach(x => { const r = document.createElement('div'); r.className = 'kv'; const a = document.createElement('span'), b = document.createElement('b'); a.textContent = x[0]; b.textContent = x[1]; r.appendChild(a); r.appendChild(b); k.appendChild(r); });
+  $('ovRes').classList.add('show');
+  const m = $('modalRes'); m.classList.remove('shake'); if (tipo === 'bad') { void m.offsetWidth; m.classList.add('shake'); }
+}
+function cerrarRes() { $('ovRes').classList.remove('show'); }
+
+/* ═════════ ARRANQUE ═════════ */
+document.addEventListener('visibilitychange', () => { if (!document.hidden && user && fase && !enviando && locOk) consultarEstado(); });
+(function arrancar() {
+  if (!('geolocation' in navigator)) return locGate('nosoporte');
+  locGate();
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'geolocation' }).then(s => {
+      if (s.state === 'granted') pedirUbicacion(); else if (s.state === 'denied') locGate('denegado');
+      s.onchange = () => { if (s.state === 'denied') { detenerWatch(); pos = null; locGate('denegado'); } else if (s.state === 'granted' && watchId === null) pedirUbicacion(); };
+    }).catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
