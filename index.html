@@ -165,6 +165,20 @@ button { font-family: inherit; touch-action: manipulation; }
 @keyframes pinf { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-7px) } }
 @keyframes dash { to { stroke-dashoffset: -24 } }
 @keyframes draw { to { stroke-dashoffset: 0 } }
+
+/* verificación con gestos */
+.vf { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.vf-ring { position: absolute; left: 50%; top: 40%; width: 64%; max-width: 300px; aspect-ratio: 3 / 4; transform: translate(-50%, -50%); border: 4px solid rgba(255,255,255,.9); border-radius: 50%; box-shadow: 0 0 0 2000px rgba(0,20,60,.5); transition: border-color .25s; }
+.vf-ring.ok { border-color: #34d399; } .vf-ring.warn { border-color: #fbbf24; }
+.vf-card { position: absolute; left: 14px; right: 14px; bottom: 132px; background: rgba(0,20,60,.86); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.2); border-radius: 20px; padding: 14px 16px; color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.vf-card b { font-family: 'Outfit', sans-serif; font-size: 1.15rem; line-height: 1.2; } .vf-card span { font-size: .82rem; opacity: .85; min-height: 1.1em; }
+.vf-arrow { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
+.vf-arrow svg { width: 32px; height: 32px; stroke: #00d2ff; fill: none; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; animation: nudge 1s ease-in-out infinite; }
+.vf-arrow.derecha { transform: rotate(0deg); } .vf-arrow.izquierda { transform: rotate(180deg); } .vf-arrow.arriba { transform: rotate(-90deg); } .vf-arrow.abajo { transform: rotate(90deg); }
+.vf-arrow.frente svg, .vf-arrow.ok svg, .vf-arrow.error svg, .vf-arrow.carga svg { animation: none; opacity: 0; } .vf-arrow.frente { box-shadow: inset 0 0 0 3px #00d2ff; } .vf-arrow.ok { background: #059669; box-shadow: none; } .vf-arrow.error { background: #dc2626; } .vf-arrow.carga { border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; animation: spin .8s linear infinite; background: none; }
+.vf-dots { display: flex; gap: 8px; margin-top: 4px; } .vf-dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.3); display: block; transition: background .2s; } .vf-dots i.on { background: #34d399; }
+.cam.vf-on .cam-bar .shutter, .cam.vf-on .cam-bar .cam-round:last-child { visibility: hidden; }
+@keyframes nudge { 0%,100% { transform: translateX(-3px) } 50% { transform: translateX(5px) } }
 </style>
 </head>
 <body>
@@ -298,7 +312,7 @@ button { font-family: inherit; touch-action: manipulation; }
           <div class="sec-title">Registrar ingreso</div>
           <button class="foto-slot" id="slotE" onclick="abrirCamara()">
             <div class="foto-thumb" id="thumbE"><svg class="ic ic-lg"><use href="#i-camera"/></svg></div>
-            <div class="foto-t"><b id="fotoETitle">Tomar fotografía</b><span id="fotoESub">Obligatoria para registrar el ingreso</span></div>
+            <div class="foto-t"><b id="fotoETitle">Verificación y fotografía</b><span id="fotoESub">Gestos guiados · obligatoria para el ingreso</span></div>
           </button>
           <button class="btn-primary" id="btnEntrada" onclick="registrar('entrada')"><svg class="ic"><use href="#i-login"/></svg>REGISTRAR INGRESO</button>
           <p class="note"><svg class="ic ic-sm"><use href="#i-info"/></svg><span>Tu ubicación de ingreso quedará como punto de referencia. La salida solo podrá registrarse a máximo <b class="radioTxt">20</b> metros de allí.</span></p>
@@ -333,7 +347,7 @@ button { font-family: inherit; touch-action: manipulation; }
           </div>
           <button class="foto-slot" id="slotS" onclick="abrirCamara()">
             <div class="foto-thumb" id="thumbS"><svg class="ic ic-lg"><use href="#i-camera"/></svg></div>
-            <div class="foto-t"><b id="fotoSTitle">Tomar fotografía</b><span id="fotoSSub">Obligatoria para registrar la salida</span></div>
+            <div class="foto-t"><b id="fotoSTitle">Verificación y fotografía</b><span id="fotoSSub">Gestos guiados · obligatoria para la salida</span></div>
           </button>
           <button class="btn-primary btn-out" id="btnSalida" onclick="registrar('salida')"><svg class="ic"><use href="#i-logout"/></svg>REGISTRAR SALIDA</button>
           <p class="note"><svg class="ic ic-sm"><use href="#i-info"/></svg><span>Ingresaste a las <b id="entradaHora">--:--</b>. La salida solo se registra dentro de <b class="radioTxt">20</b> m del punto de ingreso; si estás fuera de rango se notificará por correo.</span></p>
@@ -364,6 +378,7 @@ button { font-family: inherit; touch-action: manipulation; }
   <div class="cam-top">Fotografía de comprobación</div>
   <div class="cam-err hidden" id="camErr"><div class="cv-mark" style="width:64px;height:64px"><svg class="ic ic-lg"><use href="#i-camera"/></svg></div><p id="camErrTxt">No se pudo abrir la cámara dentro del navegador.</p><button class="btn-cover" onclick="usarCamaraNativa()"><svg class="ic"><use href="#i-camera"/></svg><span>ABRIR CÁMARA DEL TELÉFONO</span></button><button class="g-link" onclick="cerrarCamara()">Cancelar</button></div>
   <video id="camVideo" autoplay playsinline muted class="mirror"></video>
+  <div class="vf hidden" id="vf"><div class="vf-ring" id="vfRing"></div><div class="vf-card"><div class="vf-arrow" id="vfArrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></div><b id="vfTxt"></b><span id="vfSub"></span><div class="vf-dots" id="vfDots"></div></div></div>
   <div class="cam-bar">
     <button class="cam-round" onclick="cerrarCamara()" aria-label="Cancelar"><svg class="ic"><use href="#i-x"/></svg></button>
     <button class="shutter" onclick="capturarFoto()" aria-label="Tomar foto"></button>
@@ -375,7 +390,7 @@ button { font-family: inherit; touch-action: manipulation; }
 <div class="overlay" id="ovRes">
   <div class="modal" id="modalRes">
     <div class="modal-top" id="resTop"><div class="modal-ic"><svg class="ic" id="resIc" viewBox="0 0 24 24"></svg></div><h3 id="resTitle"></h3></div>
-    <div class="modal-body"><p id="resMsg"></p><div id="resKv"></div><button class="btn-primary" onclick="cerrarRes()">ENTENDIDO</button></div>
+    <div class="modal-body"><p id="resMsg"></p><div id="resKv"></div><button class="btn-primary" id="resBtn" onclick="cerrarRes()">ENTENDIDO</button></div>
   </div>
 </div>
 <div class="loading-ov" id="loadingOv"><div class="spinner"></div><span id="loadingMsg">Procesando...</span></div>
@@ -557,6 +572,7 @@ function cambiarPersona() {
 /* ═════════ JORNADA ═════════ */
 function titulo(n) { return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase(); }
 function entrar() {
+  if (VF.activa && navigator.mediaDevices) setTimeout(vfCargar, 1500);
   $('cover').classList.add('hide'); $('app').inert = false; window.scrollTo(0, 0);
   const p = user.asesor.trim().split(/\s+/);
   $('avatar').textContent = ((p[0] || '')[0] + ((p[1] || '')[0] || '')).toUpperCase();
@@ -612,7 +628,9 @@ function camError(msg) { $('camErrTxt').textContent = msg; $('camErr').classList
 async function abrirCamara() {
   $('cam').classList.add('show'); $('camErr').classList.add('hidden');
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return camError('Este navegador no permite abrir la cámara dentro de la página. Usa la cámara del teléfono.');
+  facing = 'user'; verifTxt = 'SIN VERIFICACIÓN'; $('vf').classList.add('hidden'); $('cam').classList.remove('vf-on'); vfCtl.abort = true;
   await iniciarStream();
+  if (stream && VF.activa) vfArrancar();
 }
 async function iniciarStream() {
   detenerStream(); $('camErr').classList.add('hidden');
@@ -621,10 +639,106 @@ async function iniciarStream() {
 }
 function usarCamaraNativa() { cerrarCamara(); $('fileFallback').click(); }
 function detenerStream() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
-function cerrarCamara() { detenerStream(); $('cam').classList.remove('show'); }
-function voltearCamara() { facing = facing === 'user' ? 'environment' : 'user'; iniciarStream(); }
-function capturarFoto() { const v = $('camVideo'); if (!v.videoWidth) return; procesarImagen(v, v.videoWidth, v.videoHeight); cerrarCamara(); }
-function fotoDesdeArchivo(inp) { const f = inp.files && inp.files[0]; if (!f) return; const img = new Image(), url = URL.createObjectURL(f); img.onload = () => { procesarImagen(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(url); }; img.src = url; inp.value = ''; }
+function cerrarCamara() { vfCtl.abort = true; detenerStream(); $('cam').classList.remove('show', 'vf-on'); $('vf').classList.add('hidden'); }
+function voltearCamara() { vfCtl.abort = true; $('vf').classList.add('hidden'); $('cam').classList.remove('vf-on'); facing = facing === 'user' ? 'environment' : 'user'; verifTxt = 'OMITIDA: cámara trasera'; iniciarStream(); }
+/* ═════════ VERIFICACIÓN CON GESTOS (prueba de vida, corre en el navegador) ═════════ */
+// Ajustes: gestos por intento, tiempo por gesto, intentos y sensibilidad (yaw = giro, pitch = arriba/abajo, relativos a la posición inicial).
+const VF = { activa: true, gestos: 3, tGesto: 8000, intentos: 2, yaw: 0.28, pitch: 0.07, lib: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12' };
+const VF_DEBUG = /[?&]debug=1/.test(location.search);
+const VF_TXT = { derecha: 'Gira la cabeza a tu derecha', izquierda: 'Gira la cabeza a tu izquierda', arriba: 'Mira hacia arriba', abajo: 'Mira hacia abajo' };
+let verifTxt = '', vfCtl = { abort: true }, vfPromesa = null;
+const esperar = ms => new Promise(r => setTimeout(r, ms));
+function vfCargar() {
+  if (vfPromesa) return vfPromesa;
+  vfPromesa = new Promise(ok => {
+    const s = document.createElement('script'); s.src = VF.lib + '/dist/face-api.js'; s.async = true;
+    s.onload = async () => { try { await faceapi.nets.tinyFaceDetector.loadFromUri(VF.lib + '/model'); await faceapi.nets.faceLandmark68TinyNet.loadFromUri(VF.lib + '/model'); ok(true); } catch (e) { ok(false); } };
+    s.onerror = () => ok(false); document.head.appendChild(s);
+  });
+  return vfPromesa;
+}
+function vfUI(txt, sub, flecha) { $('vfTxt').textContent = txt; $('vfSub').textContent = sub || ''; $('vfArrow').className = 'vf-arrow ' + (flecha || ''); }
+function vfSub(t) { if (!VF_DEBUG) $('vfSub').textContent = t; }
+function vfRing(e) { $('vfRing').className = 'vf-ring ' + (e || ''); }
+function vfPuntos(n, hechos) { const d = $('vfDots'); d.innerHTML = ''; for (let i = 0; i < n; i++) { const e = document.createElement('i'); if (i < hechos) e.className = 'on'; d.appendChild(e); } }
+function vfBarajar(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+async function vfMedir(v, opts) {
+  try {
+    const d = await faceapi.detectSingleFace(v, opts).withFaceLandmarks(true);
+    if (!d || !v.videoWidth) return null;
+    const p = d.landmarks.positions, nose = p[30], dL = nose.x - p[0].x, dR = p[16].x - nose.x, eyeY = (p[36].y + p[45].y) / 2, b = d.detection.box;
+    return { yaw: (dL - dR) / (dL + dR), pitch: (nose.y - eyeY) / (p[8].y - eyeY), cx: (b.x + b.width / 2) / v.videoWidth, cy: (b.y + b.height / 2) / v.videoHeight, w: b.width / v.videoWidth };
+  } catch (e) { return null; }
+}
+async function vfEncuadrar(v, opts, ctl) {
+  vfUI('Centra tu rostro en el óvalo', 'Mira al frente y no te muevas', 'frente'); vfRing('');
+  const t0 = Date.now(); let buenas = [];
+  while (Date.now() - t0 < 25000) {
+    if (ctl.abort) return null;
+    const m = await vfMedir(v, opts);
+    if (m && Math.abs(m.cx - .5) < .2 && Math.abs(m.cy - .45) < .22 && m.w > .22 && m.w < .85) { buenas.push(m); vfRing('ok'); }
+    else { buenas = []; vfRing(m ? 'warn' : ''); vfSub(m ? 'Acércate o aléjate un poco y céntrate en el óvalo' : 'No vemos tu rostro: busca más luz y mira a la cámara'); }
+    if (buenas.length >= 6) { const avg = k => buenas.reduce((t, x) => t + x[k], 0) / buenas.length; return { yaw: avg('yaw'), pitch: avg('pitch') }; }
+    await esperar(110);
+  }
+  return null;
+}
+async function vfGesto(v, opts, g, base, ctl) {
+  const t0 = Date.now(); let seguidas = 0;
+  while (Date.now() - t0 < VF.tGesto) {
+    if (ctl.abort) return false;
+    const m = await vfMedir(v, opts);
+    if (m) {
+      const dy = m.yaw - base.yaw, dp = m.pitch - base.pitch;
+      if (VF_DEBUG) $('vfSub').textContent = 'yaw ' + dy.toFixed(2) + ' · pitch ' + dp.toFixed(2);
+      const ok = g === 'derecha' ? dy < -VF.yaw : g === 'izquierda' ? dy > VF.yaw : g === 'arriba' ? dp < -VF.pitch : dp > VF.pitch;
+      seguidas = ok ? seguidas + 1 : 0; if (seguidas >= 2) return true;
+    }
+    await esperar(90);
+  }
+  return false;
+}
+async function vfFrente(v, opts, base, ctl) {
+  vfUI('Perfecto: mira al frente', 'No te muevas, tomamos la foto', 'frente'); const t0 = Date.now(); let seguidas = 0;
+  while (Date.now() - t0 < 9000) {
+    if (ctl.abort) return false;
+    const m = await vfMedir(v, opts);
+    if (m && Math.abs(m.yaw - base.yaw) < 0.12 && Math.abs(m.pitch - base.pitch) < 0.05 && Math.abs(m.cx - .5) < .25) { if (++seguidas >= 5) return true; } else seguidas = 0;
+    await esperar(100);
+  }
+  return false;
+}
+function vfManual(motivo) {
+  verifTxt = motivo; vfUI('No se pudo completar la verificación', 'Toma la foto normal: quedará marcada para revisión', 'error'); vfRing('warn'); $('cam').classList.remove('vf-on');
+}
+async function vfArrancar() {
+  const ctl = vfCtl = { abort: false }; verifTxt = ''; const v = $('camVideo'); $('cam').classList.add('vf-on'); $('vf').classList.remove('hidden'); vfPuntos(0, 0);
+  vfUI('Preparando verificación…', 'Un momento', 'carga'); vfRing('');
+  const ok = await Promise.race([vfCargar(), esperar(20000).then(() => false)]);
+  if (ctl.abort) return;
+  if (!ok) { vfPromesa = null; return vfManual('OMITIDA: no se pudo cargar la verificación'); }
+  const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+  for (let intento = 1; intento <= VF.intentos; intento++) {
+    const base = await vfEncuadrar(v, opts, ctl); if (ctl.abort) return; if (!base) break;
+    const seq = vfBarajar(['derecha', 'izquierda', 'arriba', 'abajo']).slice(0, VF.gestos), hechos = []; let fallo = false;
+    vfPuntos(seq.length, 0);
+    for (let k = 0; k < seq.length; k++) {
+      vfUI(VF_TXT[seq[k]], 'Gesto ' + (k + 1) + ' de ' + seq.length, seq[k]);
+      const ok2 = await vfGesto(v, opts, seq[k], base, ctl); if (ctl.abort) return;
+      if (!ok2) { fallo = true; break; }
+      hechos.push(seq[k]); vfPuntos(seq.length, k + 1); vfRing('ok'); await esperar(300);
+    }
+    if (!fallo && await vfFrente(v, opts, base, ctl)) {
+      if (ctl.abort) return;
+      verifTxt = 'OK: ' + hechos.join(', '); vfUI('Verificado', '', 'ok'); await esperar(350); procesarImagen(v, v.videoWidth, v.videoHeight); cerrarCamara(); return;
+    }
+    if (ctl.abort) return;
+    vfUI('No se pudo verificar', intento < VF.intentos ? 'Intentémoslo de nuevo' : '', 'error'); vfRing('warn'); await esperar(1300);
+  }
+  vfManual('FALLIDA: no completó los gestos');
+}
+function capturarFoto() { const v = $('camVideo'); if (!v.videoWidth) return; if (!verifTxt || verifTxt === 'SIN VERIFICACIÓN') verifTxt = 'OMITIDA: captura manual'; procesarImagen(v, v.videoWidth, v.videoHeight); cerrarCamara(); }
+function fotoDesdeArchivo(inp) { const f = inp.files && inp.files[0]; if (!f) return; verifTxt = 'OMITIDA: cámara nativa'; const img = new Image(), url = URL.createObjectURL(f); img.onload = () => { procesarImagen(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(url); }; img.src = url; inp.value = ''; }
 function procesarImagen(src, w, h) {
   const esc = Math.min(1, 1024 / Math.max(w, h)), W = Math.round(w * esc), H = Math.round(h * esc);
   const c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -645,8 +759,8 @@ function pintarFotoUI() {
 function resetFotoUI() {
   ['slotE', 'slotS'].forEach(i => $(i).classList.remove('has'));
   ['thumbE', 'thumbS'].forEach(i => $(i).innerHTML = '<svg class="ic ic-lg"><use href="#i-camera"/></svg>');
-  $('fotoETitle').textContent = $('fotoSTitle').textContent = 'Tomar fotografía';
-  $('fotoESub').textContent = 'Obligatoria para registrar el ingreso'; $('fotoSSub').textContent = 'Obligatoria para registrar la salida';
+  $('fotoETitle').textContent = $('fotoSTitle').textContent = 'Verificación y fotografía';
+  $('fotoESub').textContent = 'Gestos guiados · obligatoria para el ingreso'; $('fotoSSub').textContent = 'Gestos guiados · obligatoria para la salida';
 }
 
 /* ═════════ REGISTRAR ═════════ */
@@ -658,15 +772,19 @@ async function registrar(tipo) {
   if (!foto) return toast('Falta la fotografía de comprobación.');
   enviando = true; loading(true, tipo === 'entrada' ? 'Registrando ingreso...' : 'Validando ubicación y registrando salida...');
   try {
-    const d = await api('POST', null, { accion: tipo, ext: user.ext, lat: pos.lat, lng: pos.lng, acc: pos.acc, foto: foto, ua: navigator.userAgent });
+    const d = await api('POST', null, { accion: tipo, ext: user.ext, lat: pos.lat, lng: pos.lng, acc: pos.acc, foto: foto, verif: verifTxt, ua: navigator.userAgent });
     loading(false);
     if (d.success) {
       aplicarEstado(d.fase, d.registro);
-      if (tipo === 'entrada') mostrarRes('ok', 'Ingreso registrado', 'Tu ingreso quedó guardado. Esta ubicación es ahora tu punto de referencia para la salida.', [['Hora', d.registro.entradaTxt], ['Rango de salida', CFG.radio + ' m']]);
-      else mostrarRes('ok', 'Salida registrada', 'Tu salida quedó registrada correctamente.', [['Ingreso', d.registro.entradaTxt], ['Salida', d.registro.salidaTxt], ['Distancia al ingreso', (d.registro.distanciaSalida != null ? d.registro.distanciaSalida : 0) + ' m']]);
+      if (tipo === 'entrada' && d.alerta) mostrarRes('warn', 'Ingreso registrado con alerta', 'Tu ingreso quedó guardado, pero estás fuera del perímetro de la sala (' + d.distancia + ' m del centro; permitido ' + d.radio + ' m). Se notificó a coordinación para validarlo.', [['Hora', d.registro.entradaTxt], ['Distancia a la sala', d.distancia + ' m']]);
+      else if (tipo === 'entrada') mostrarRes('ok', 'Ingreso registrado', 'Tu ingreso quedó guardado. Esta ubicación es ahora tu punto de referencia para la salida.', [['Hora', d.registro.entradaTxt], ['Rango de salida', CFG.radio + ' m']]);
+      else mostrarRes('ok', 'Salida registrada', 'Tu salida quedó registrada correctamente. Volverás a la pantalla inicial automáticamente.', [['Ingreso', d.registro.entradaTxt], ['Salida', d.registro.salidaTxt], ['Distancia al ingreso', (d.registro.distanciaSalida != null ? d.registro.distanciaSalida : 0) + ' m']], { cuenta: 6, alCerrar: volverInicio });
     } else if (d.code === 'FUERA_DE_RANGO') {
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       mostrarRes('bad', 'Fuera de rango', 'No estás dentro del rango permitido para registrar la salida. El intento quedó guardado y se notificó por correo.', [['Distancia al ingreso', d.distancia + ' m'], ['Rango permitido', d.radio + ' m'], ['Hora del intento', d.horaIntento], ['Intentos hoy', String(d.intentos)]]);
+    } else if (d.code === 'FUERA_DE_PERIMETRO') {
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      mostrarRes('bad', 'Fuera del perímetro', 'No estás dentro del perímetro de la sala, por lo que el ingreso no fue registrado. Se notificó a coordinación.', [['Distancia a la sala', d.distancia + ' m'], ['Perímetro permitido', d.radio + ' m']]);
     } else if (d.code === 'PRECISION_BAJA') { mostrarRes('warn', 'Señal GPS débil', d.error); }
     else if (d.code === 'YA_ENTRADA' || d.code === 'JORNADA_COMPLETA' || d.code === 'SIN_ENTRADA') { mostrarRes('blue', 'Estado actualizado', d.error); consultarEstado(); }
     else { mostrarRes('bad', 'No se pudo registrar', d.error || 'Error desconocido'); }
@@ -678,7 +796,14 @@ const ICONOS = {
   alert: '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
   info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
 };
-function mostrarRes(tipo, titulo, msg, kv) {
+let resCb = null, resTimer = null;
+function volverInicio() {
+  store.del('oikos_geo_user'); user = null; fase = null; reg = null; foto = '';
+  $('app').inert = true; $('cover').classList.remove('hide'); $('selSala').value = ''; onSala();
+}
+function mostrarRes(tipo, titulo, msg, kv, opts) {
+  clearInterval(resTimer); resCb = (opts && opts.alCerrar) || null; $('resBtn').textContent = 'ENTENDIDO';
+  if (opts && opts.cuenta) { let n = opts.cuenta; $('resBtn').textContent = 'ENTENDIDO (' + n + ')'; resTimer = setInterval(() => { n--; if (n <= 0) cerrarRes(); else $('resBtn').textContent = 'ENTENDIDO (' + n + ')'; }, 1000); }
   $('resTop').className = 'modal-top ' + tipo; $('resIc').innerHTML = ICONOS[tipo === 'ok' ? 'ok' : tipo === 'blue' ? 'info' : 'alert'];
   $('resTitle').textContent = titulo; $('resMsg').textContent = msg;
   const k = $('resKv'); k.innerHTML = '';
@@ -686,7 +811,7 @@ function mostrarRes(tipo, titulo, msg, kv) {
   $('ovRes').classList.add('show');
   const m = $('modalRes'); m.classList.remove('shake'); if (tipo === 'bad') { void m.offsetWidth; m.classList.add('shake'); }
 }
-function cerrarRes() { $('ovRes').classList.remove('show'); }
+function cerrarRes() { clearInterval(resTimer); $('ovRes').classList.remove('show'); const cb = resCb; resCb = null; if (cb) cb(); }
 
 /* ═════════ ARRANQUE ═════════ */
 document.addEventListener('visibilitychange', () => { if (!document.hidden && user && fase && !enviando && locOk) consultarEstado(); });
